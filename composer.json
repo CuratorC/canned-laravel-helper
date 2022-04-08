@@ -1,0 +1,26 @@
+{
+    "name": "curatorc/canned-laravel-helper",
+    "description": "laravel 辅助函数",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "CuratorC",
+            "email": "mail@curatorc.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^9.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Curatorc\\CannedLaravelHelper\\": "./src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CuratorC\\CannedLaravelHelper\\ServiceProvider"
+            ]
+        }
+    }
+}
