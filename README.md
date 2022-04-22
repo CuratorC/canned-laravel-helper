@@ -5,9 +5,28 @@
 
 ## Installing
 
+### Git 库引用（推荐）
+
 ```shell
 $ composer require curatorc/canned-laravel-helper
 ```
+
+### 本地引用
+
+* 克隆仓库至项目目录的平级目录
+  ```shell
+  git clone git@github.com:CuratorC/canned-laravel-helper.git
+  ```
+
+* 添加本地库源
+  ```shell
+  composer config repositories.canned-laravel-helper path ../canned-laravel-helper
+  ```
+
+* 引用`SDK`
+  ```shell
+  composer require curatorc/canned-laravel-helper:dev-master
+  ```
 
 ## Usage
 
