@@ -15,31 +15,39 @@ trait ScopeCannedSearch
 
     protected FormRequest $searchRequest;
 
-    // 查询字段记录
-    private array $searchArray = array();
 
     /**
      * @description 单条查询
-     * $query->cannedWhen('field', function(Builder $query, string $value){
-     *     $query->...
+     * $query->cannedWhen('column', function(Builder $query, string $value){
+     *     $query->where('column', $value);
      * });
      * @param Builder $query
-     * @param string $field
+     * @param string $column
      * @param $func
      * @return Builder
      * @author CuratorC
      * @date 2021/3/1
      */
-    public function scopeCannedWhen(Builder $query, string $field, $func): Builder
+    public function scopeCannedWhen(Builder $query, string $column, $func): Builder
     {
-        $query->when($this->searchRequest->$field, function ($query) use ($func, $field) {
-            $func($query, $this->searchRequest->$field);
+        $query->when($this->searchRequest->$column, function ($query) use ($func, $column) {
+            $func($query, $this->searchRequest->$column);
         });
-        $this->searchArray[] = ['field' => $field, 'func' => $func];
+
+        // 添加 模糊搜索查询字段
+        $this->searchArray[] = [$this->searchColumnFieldName => $column, $this->searchFuncFieldName => $func];
 
         return $query;
     }
 
+    // 查询字段记录
+    private array $searchArray = array();
+    // request 模糊搜索参数名
+    protected string $searchKeywordName = 'keyword';
+
+    // 模糊搜索 查询字段记录格式
+    private string $searchColumnFieldName = 'column';
+    private string $searchFuncFieldName = 'func';
     /**
      * @description 为 keyword 匹配所有查询条件查询
      * $query->cannedWhenKeyword();
@@ -50,14 +58,27 @@ trait ScopeCannedSearch
      */
     public function scopeCannedWhenKeyword(Builder $query): Builder
     {
-        return $query->when('keyword', function ($query) {
+        return $query->when($this->searchKeywordName, function ($query) {
             foreach ($this->searchArray as $search) {
-                $func = $search['func'];
-                $field = $search['field'];
+                $func = $search[$this->searchColumnFieldName];
+                $field = $search[$this->searchFuncFieldName];
                 $func($query, $this->searchRequest->$field);
             }
         });
     }
+
+
+    // Order
+    // request order 行 参数名
+    protected string $orderByColumnFieldName = 'field';
+    // request order 行 排列方式名
+    protected string $orderByDirectionFieldName = 'order';
+    // request order 新行 默认排列方式
+    protected string $orderByNewColumnDefaultDirection = 'ASC';
+
+    // 固有排列方式
+    protected string $orderByDefaultColumn = 'id';
+    protected string $orderByDefaultDirection = 'DESC';
 
     /**
      * @description order 排序
@@ -71,10 +92,13 @@ trait ScopeCannedSearch
     public function scopeCannedOrder(Builder $query, ...$orderRules): Builder
     {
         // 检查用户自带参数
-        $query->when($this->searchRequest->field, function ($query) {
+        $query->when($this->orderByColumnFieldName, function ($query) {
             // 补全 order 参数、
-            if (empty($this->searchRequest->order)) $this->searchRequest->order = 'ASC';
-            $query->orderBy($this->searchRequest->field, $this->searchRequest->order);
+            $orderByColumnFieldName = $this->orderByColumnFieldName;
+            $orderByDirectionFieldName = $this->orderByDirectionFieldName;
+
+            if (empty($this->searchRequest->$orderByDirectionFieldName)) $this->searchRequest->$orderByDirectionFieldName = $this->orderByNewColumnDefaultDirection;
+            $query->orderBy($this->searchRequest->$orderByColumnFieldName, $this->searchRequest->$orderByDirectionFieldName);
         });
 
         // 循环程序自定义参数
@@ -84,9 +108,8 @@ trait ScopeCannedSearch
         }
 
         // 追加固定排序
-        return $query->orderBy('id', 'DESC');
+        return $query->orderBy($this->orderByDefaultColumn, $this->orderByDefaultDirection);
     }
-
 
     /**
      *ㅤ分页，从 request 中自动取 page, size 两个参数进行判断。
@@ -128,7 +151,7 @@ trait ScopeCannedSearch
      */
     public function scopeCannedWhereDate($query, $field): Builder
     {
-        if (preg_match("/^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) - [1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $this->searchRequest->$field)) {
+        if (preg_match("/^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1]) - [1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/", $this->searchRequest->$field)) {
             $timeArray = explode(' - ', $this->searchRequest->$field);
             // 结束日期加一天
             $endDay = Carbon::create($timeArray[1])->addDay();

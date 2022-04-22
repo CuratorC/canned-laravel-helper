@@ -7,11 +7,16 @@ use Log;
 
 trait MiddleTableOperate
 {
+    protected string $modelFieldName = 'model';
+    protected string $idFieldName = 'id';
 
     /**
-     * 当传递 array 时，格式为： ['field' => 'storage_image', 'id' => 12];
+     * 一个本对象与目标对象绑定，或将本集合与对象目标绑定
+     * 当传递 array 时，格式为： ['model' => 'AimModel', 'id' => 12];
+     * @param $object
+     * @return void
      */
-    public function middleSync($object)
+    public function middleSync($object): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
 
@@ -40,7 +45,7 @@ trait MiddleTableOperate
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function createForeachSecondModel($firstModel, $secondModel, $query, $first_key, $second_key)
+    private function createForeachSecondModel($firstModel, $secondModel, $query, $first_key, $second_key): void
     {
         if (is_array($secondModel)) { // 数组键值对
             $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $secondModel['id']);
@@ -63,7 +68,7 @@ trait MiddleTableOperate
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function createMiddleTableData($query, $first_key, $first_value, $second_key, $second_value)
+    private function createMiddleTableData($query, $first_key, $first_value, $second_key, $second_value): void
     {
         $query->firstOrCreate([$first_key => $first_value, $second_key => $second_value]);
     }
@@ -109,17 +114,21 @@ trait MiddleTableOperate
      */
     private function getModelName($model): string
     {
-        if (is_array($model)) return $model['field'];
+        if (is_array($model)) return $model[$this->modelFieldName];
         else if (object_is_collection($model)) return $this->getModelName($model[0]);
         else return str_replace('\\', '', str_replace('App\Models\\', '', get_class($model)));
     }
 
-    public function cleanSync($object)
+    /**
+     * 将本对象与目标模型的关联全部清除。可接受参数：array: ['model' => 'AimModel']; 或者 new AimModel();
+     * @param $object
+     * @return void
+     */
+    public function cleanSync($object): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
         if ($table_name) {
             $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
-            // $query = DB::table($table_name);
             $query = new $class;
 
             $list = $query->where($first_key, $this->id)->get();
@@ -129,12 +138,16 @@ trait MiddleTableOperate
         }
     }
 
-    public function deleteSync($object)
+    /**
+     * 将本对象与目标模型的关联删除。可接受参数：array: ['model' => 'AimModel', 'id' => 12]; Model; Collection
+     * @param $object
+     * @return void
+     */
+    public function deleteSync($object): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
         if ($table_name) {
             $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
-            // $query = DB::table($table_name);
 
             $ids = $this->getSecondValuesFromObject($object);
             foreach ($ids as $id) {
@@ -150,8 +163,8 @@ trait MiddleTableOperate
     private function getSecondValuesFromObject($object): array
     {
         if (is_array($object)) { // 数组键值对
-            if (is_array($object['id'])) return $object['id'];
-            else return [$object['id']];
+            if (is_array($object[$this->idFieldName])) return $object[$this->idFieldName];
+            else return [$object[$this->idFieldName]];
         } elseif (object_is_collection($object)) {
             $ids = array();
             foreach ($object as $item) { // 集合

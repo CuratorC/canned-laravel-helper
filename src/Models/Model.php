@@ -4,7 +4,7 @@ namespace CuratorC\CannedLaravelHelper\Models;
 
 use CuratorC\CannedLaravelHelper\Models\Traits\MiddleTableOperate;
 use CuratorC\CannedLaravelHelper\Models\Traits\ScopeCannedSearch;
-use CuratorC\CannedLaravelHelper\Models\Traits\StorageManage;
+use Eloquent;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder|Model query()
  * @method static \Illuminate\Database\Query\Builder|Model withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Model withoutTrashed()
- * @mixin \Eloquent
+ * @mixin Eloquent
  */
 class Model extends EloquentModel
 {
@@ -33,6 +33,5 @@ class Model extends EloquentModel
     use SoftDeletes; // 软删除
     use ScopeCannedSearch; // scope 查询
     use MiddleTableOperate; // 中间表操作
-    use StorageManage; // 资源管理
 }
 
