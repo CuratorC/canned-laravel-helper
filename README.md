@@ -6,12 +6,16 @@
 ## Installing
 
 ```shell
-$ composer require curatorc/canned-laravel-helper
+composer require curatorc/canned-laravel-helper
 ```
 
 ## Usage
 
-TODO
+### Publish Basic Class
+
+```shell
+php artisan vendor:publish --provider="CuratorC\CannedLaravelHelper\ServiceProvider"
+```
 
 ## Contributing
 
