@@ -16,7 +16,7 @@ class ServiceProvider extends BasicServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../basic/yzzsocket.php' => config_path('yzzsocket.php'),
+            __DIR__.'/../basic/app' => app_path(),
         ]);
     }
 
