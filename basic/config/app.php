@@ -182,6 +182,7 @@ return [
 
         // 观察者
         App\Providers\ObserverProvider::class,
+
     ],
 
     /*

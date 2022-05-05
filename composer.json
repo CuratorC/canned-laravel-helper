@@ -12,7 +12,9 @@
         "php": "^8.0.2",
         "laravel/framework": "^9.0",
         "barryvdh/laravel-ide-helper": "^2.12",
-        "overtrue/laravel-lang": "~6.0"
+        "overtrue/laravel-lang": "~6.0",
+        "iidestiny/laravel-filesystem-oss": "^3.1",
+        "guzzlehttp/guzzle": "^7.4"
     },
     "autoload": {
         "psr-4": {

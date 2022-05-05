@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use DB;
 use Log;
+use Storage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,7 +18,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // 注册 curl 容器
+        $this->app->singleton('curl', function () {
+            return new Client();
+        });
+
+        // 注册 oss 容器
+        $this->app->singleton('oss', function () {
+            return Storage::disk('oss');
+        });
+
+        // ide helper
+        if ($this->app->environment() !== 'production') {
+            $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+        }
     }
 
     /**
@@ -33,7 +48,8 @@ class AppServiceProvider extends ServiceProvider
                 $query->bindings,
             );
         });*/
-        //
-        Schema::defaultStringLength(191); // 解决索引长度问题
+
+        // 解决索引长度问题
+        Schema::defaultStringLength(191);
     }
 }
