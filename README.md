@@ -14,11 +14,13 @@ composer require curatorc/canned-laravel-helper
 ### 本地引用
 
 * 克隆仓库至项目目录的平级目录
+  > 在项目根目录的上一级目录运行
   ```shell
   git clone git@github.com:CuratorC/canned-laravel-helper.git
   ```
 
 * 添加本地库源
+  > 在项目根目录运行
   ```shell
   composer config repositories.canned-laravel-helper path ../canned-laravel-helper
   ```
