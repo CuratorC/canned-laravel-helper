@@ -16,7 +16,7 @@ class ServiceProvider extends BasicServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../basic/app' => app_path(),
+            __DIR__.'/../basic' => app_path() . '/../',
         ]);
     }
 
