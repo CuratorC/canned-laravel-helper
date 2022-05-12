@@ -3,8 +3,7 @@
 namespace App\Models;
 
 use CuratorC\CannedLaravelHelper\Models\Traits\MiddleTableOperate;
-use CuratorC\CannedLaravelHelper\Models\Traits\ScopeCoderSearch;
-use CuratorC\CannedLaravelHelper\Models\Traits\StorageManage;
+use CuratorC\CannedLaravelHelper\Models\Traits\ScopeCannedSearch;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +32,5 @@ class Model extends EloquentModel
     use SoftDeletes; // 软删除
     use ScopeCoderSearch; // scope 查询
     use MiddleTableOperate; // 中间表操作
-    use StorageManage; // 资源管理
 }
 
