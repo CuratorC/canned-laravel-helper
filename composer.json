@@ -14,7 +14,8 @@
         "barryvdh/laravel-ide-helper": "^2.12",
         "overtrue/laravel-lang": "~6.0",
         "iidestiny/laravel-filesystem-oss": "^3.1",
-        "guzzlehttp/guzzle": "^7.4"
+        "guzzlehttp/guzzle": "^7.4",
+        "laravel/passport": "^10.4"
     },
     "autoload": {
         "psr-4": {

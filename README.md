@@ -32,10 +32,22 @@ composer require curatorc/canned-laravel-helper
 
 ## Usage
 
-### Publish Basic Class
+### 发布基础文件
 
 ```shell
 php artisan vendor:publish --provider="CuratorC\CannedLaravelHelper\ServiceProvider"
+```
+
+### 创建生成安全访问令牌时所需的加密密钥
+
+```shell
+php artisan passport:keys
+```
+
+### 创建登录客户端
+
+```shell
+php artisan passport:client --password --name='example-app'
 ```
 
 ## Contributing
