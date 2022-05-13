@@ -4,21 +4,23 @@ namespace App\Providers;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Passport\Passport;
+use Overtrue\EasySms\EasySms;
 use Illuminate\Support\ServiceProvider;
+use Storage;
 use DB;
 use Log;
-use Storage;
-use Laravel\Passport\Passport;
 
-class AppServiceProvider extends ServiceProvider
+class CannedServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      *
      * @return void
      */
-    public function register(): void
+    public function register()
     {
+
         // 注册 curl 容器
         $this->app->singleton('curl', function () {
             return new Client();
@@ -33,7 +35,14 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment() !== 'production') {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
         }
+
+        $this->app->singleton(EasySms::class, function ($app) {
+            return new EasySms(config('easy-sms'));
+        });
+
+        $this->app->alias(EasySms::class, 'easy-sms');
     }
+
 
     /**
      * Bootstrap any application services.
