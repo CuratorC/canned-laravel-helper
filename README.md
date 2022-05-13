@@ -38,16 +38,28 @@ composer require curatorc/canned-laravel-helper
 php artisan vendor:publish --provider="CuratorC\CannedLaravelHelper\ServiceProvider"
 ```
 
-### 创建生成安全访问令牌时所需的加密密钥
+### Passport
+* 创建生成安全访问令牌时所需的加密密钥
 
 ```shell
 php artisan passport:keys
 ```
 
-### 创建登录客户端
+* 生成 passport 数据表
+
+```shell
+php artisan migrate
+```
+
+* 创建登录客户端
 
 ```shell
 php artisan passport:client --password --name='example-app'
+```
+
+* 发布自定义 grant_type
+```shell
+php artisan vendor:publish --provider="Sk\Passport\GrantTypesServiceProvider" --tag="config"
 ```
 
 ## Contributing

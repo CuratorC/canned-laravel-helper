@@ -15,7 +15,9 @@
         "overtrue/laravel-lang": "~6.0",
         "iidestiny/laravel-filesystem-oss": "^3.1",
         "guzzlehttp/guzzle": "^7.4",
-        "laravel/passport": "^10.4"
+        "laravel/passport": "^10.4",
+        "kslimani/laravel-passport-grant": "^1.1",
+        "propaganistas/laravel-phone": "^4.3"
     },
     "autoload": {
         "psr-4": {
