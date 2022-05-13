@@ -31,8 +31,8 @@ class AuthorizationsController extends AccessTokenController
                 'phone' => $parsedBody['phone'],
                 'password' => $parsedBody['password'],
                 'grant_type' => 'user-social',
-                'client_id' => config('auth.passport.clients.web.id'),
-                'client_secret' => config('auth.passport.clients.web.secret'),
+                'client_id' => config('auth.passport.clients.user.id'),
+                'client_secret' => config('auth.passport.clients.user.secret'),
             ));
 
             $response = json_decode($this->issueToken($request)->content());

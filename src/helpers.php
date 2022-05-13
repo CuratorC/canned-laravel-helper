@@ -1,10 +1,31 @@
 <?php
 
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+
+
+/**
+ * 返回错误信息
+ * @param $error
+ * @param int $status
+ * @return JsonResponse
+ */
+function response_error($error, int $status = 422): JsonResponse
+{
+    if (is_string($error) && is_array(json_decode($error, true))) $error = json_decode($error, true);
+
+    if (is_array($error)) {
+        if (is_double_array($error)) $errors = $error;
+        else $errors = ['error' => $error];
+    } else {
+        $errors = ['error' => [$error]];
+    }
+
+    // 创建 message
+    $message = create_message_by_errors($errors);
+
+    return response()->json(compact('message', 'errors'), $status);
+}
 
 /**
  * 生成随机字符串
