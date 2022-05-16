@@ -20,6 +20,13 @@ Route::prefix('v1')
     ->name('api.v1.')
     ->group(function () {
 
+        // 短信验证码
+        Route::post('verification_codes', [\App\Http\Controllers\Api\VerificationCodesController::class, 'store'])
+            ->name('verification_codes.store');
+
+        // 用户登录
+        Route::post('authorizations', [\App\Http\Controllers\Api\AuthorizationsController::class, 'store'])
+            ->name('authorizations.store');
 
         Route::middleware([
             'throttle:' . config('api.rate_limits.access'),

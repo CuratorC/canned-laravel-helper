@@ -30,6 +30,8 @@ class AuthorizationsController extends AccessTokenController
             $request = $request->withParsedBody(array(
                 'phone' => $parsedBody['phone'],
                 'password' => $parsedBody['password'],
+                'verification_key' => $parsedBody['verification_key'],
+                'verification_code' => $parsedBody['verification_code'],
                 'grant_type' => 'user-social',
                 'client_id' => config('auth.passport.clients.user.id'),
                 'client_secret' => config('auth.passport.clients.user.secret'),

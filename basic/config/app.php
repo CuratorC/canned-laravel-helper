@@ -183,8 +183,8 @@ return [
         // 观察者
         App\Providers\ObserverProvider::class,
 
-        // Easy SMS
-        App\Providers\EasySmsServiceProvider::class,
+        // Canned Service
+        App\Providers\CannedServiceProvider::class,
 
     ],
 
