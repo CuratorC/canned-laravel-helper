@@ -3,8 +3,10 @@
 namespace CuratorC\CannedLaravelHelper\Models\Traits;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  *
@@ -58,7 +60,8 @@ trait ScopeCannedSearch
      */
     public function scopeCannedWhenKeyword(Builder $query): Builder
     {
-        return $query->when($this->searchKeywordName, function ($query) {
+        $searchKeywordName = $this->searchKeywordName;
+        return $query->when($this->searchRequest->$searchKeywordName, function ($query) {
             foreach ($this->searchArray as $search) {
                 $func = $search[$this->searchColumnFieldName];
                 $field = $search[$this->searchFuncFieldName];
@@ -92,7 +95,8 @@ trait ScopeCannedSearch
     public function scopeCannedOrder(Builder $query, ...$orderRules): Builder
     {
         // 检查用户自带参数
-        $query->when($this->orderByColumnFieldName, function ($query) {
+        $orderByColumnFieldName = $this->orderByColumnFieldName;
+        $query->when($this->searchRequest->$orderByColumnFieldName, function ($query) {
             // 补全 order 参数、
             $orderByColumnFieldName = $this->orderByColumnFieldName;
             $orderByDirectionFieldName = $this->orderByDirectionFieldName;
@@ -126,11 +130,11 @@ trait ScopeCannedSearch
      * @param $query
      * @param bool $ableAll
      * @param int $defaultSize
-     * @return Builder
+     * @return Collection|LengthAwarePaginator
      * @date 2020/10/13
      * @author Curator
      */
-    public function scopeCannedPaginate($query, bool $ableAll = true, int $defaultSize = 10): Builder
+    public function scopeCannedPaginate($query, bool $ableAll = true, int $defaultSize = 10): Collection|LengthAwarePaginator
     {
         if (empty($this->searchRequest->page) && $ableAll) return $query->get();
         if (empty($this->searchRequest->size)) $this->searchRequest->size = $defaultSize;
