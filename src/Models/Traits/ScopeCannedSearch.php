@@ -61,12 +61,16 @@ trait ScopeCannedSearch
     public function scopeCannedWhenKeyword(Builder $query): Builder
     {
         $searchKeywordName = $this->searchKeywordName;
-        return $query->when($this->searchRequest->$searchKeywordName, function ($query) {
-            foreach ($this->searchArray as $search) {
-                $func = $search[$this->searchColumnFieldName];
-                $field = $search[$this->searchFuncFieldName];
-                $func($query, $this->searchRequest->$field);
-            }
+        return $query->when($this->searchRequest->$searchKeywordName, function ($query)  use ($searchKeywordName){
+            $query->where(function ($query) use ($searchKeywordName){
+                foreach ($this->searchArray as $search) {
+                    $field = $search[$this->searchColumnFieldName];
+                    $func = $search[$this->searchFuncFieldName];
+                    $query->orWhere(function ($query) use ($func, $searchKeywordName) {
+                        $func($query, $this->searchRequest->$searchKeywordName);
+                    });
+                }
+            });
         });
     }
 
