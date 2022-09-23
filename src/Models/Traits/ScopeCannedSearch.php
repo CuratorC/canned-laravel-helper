@@ -17,7 +17,6 @@ trait ScopeCannedSearch
 
     protected FormRequest $searchRequest;
 
-
     /**
      * @description 单条查询
      * $query->cannedWhen('column', function(Builder $query, string $value){
@@ -144,7 +143,6 @@ trait ScopeCannedSearch
         if (empty($this->searchRequest->size)) $this->searchRequest->size = $defaultSize;
         return $query->paginate($this->searchRequest->size);
     }
-
 
     /**
      * @description 日期筛选

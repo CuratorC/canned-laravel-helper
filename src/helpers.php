@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
  * @param int $status
  * @return JsonResponse
  */
-function response_error($error, int $status = 422): JsonResponse
+function canned_response_error($error, int $status = 422): JsonResponse
 {
     if (is_string($error) && is_array(json_decode($error, true))) $error = json_decode($error, true);
 

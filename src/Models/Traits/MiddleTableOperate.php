@@ -11,8 +11,9 @@ trait MiddleTableOperate
     protected string $idFieldName = 'id';
 
     /**
-     * 一个本对象与目标对象绑定，或将本集合与对象目标绑定
-     * 当传递 array 时，格式为： ['model' => 'AimModel', 'id' => 12];
+     * 将本对象与目标对象绑定
+     * 当目标对象传递为 array 时，格式为： ['model' => 'AimModel', 'id' => 12];
+     * 当目标对象传递为 object 时，直接传递 App\Models 模型
      * @param $object
      * @return void
      */
@@ -114,7 +115,7 @@ trait MiddleTableOperate
      */
     private function getModelName($model): string
     {
-        if (is_array($model)) return $model[$this->modelFieldName];
+        if (is_array($model)) return str_replace('\\', '', str_replace('App\Models\\', '', $model[$this->modelFieldName]));
         else if (object_is_collection($model)) return $this->getModelName($model[0]);
         else return str_replace('\\', '', str_replace('App\Models\\', '', get_class($model)));
     }
