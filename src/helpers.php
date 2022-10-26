@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 
 
@@ -212,7 +211,13 @@ function create_big_camelize($words, $separator = '_'): string
  */
 function object_is_collection($object): bool
 {
-    return get_class($object) == Collection::class;
+    return in_array(
+        get_class($object),
+        [
+            Illuminate\Support\Collection::class,
+            Illuminate\Database\Eloquent\Collection::class,
+        ]
+    );
 }
 
 /**

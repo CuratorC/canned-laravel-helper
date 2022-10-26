@@ -12,8 +12,8 @@ trait MiddleTableOperate
 
     /**
      * 将本对象与目标对象绑定
-     * 当目标对象传递为 array 时，格式为： ['model' => 'AimModel', 'id' => 12];
-     * 当目标对象传递为 object 时，直接传递 App\Models 模型
+     * 当目标对象传递为 array 时，格式为： ['model' => 'AimModel', 'id' => 12] 或 ['model' => 'AimModel', 'id' => [10, 11, 12]];
+     * 当目标对象传递为 object 时，直接传递 App\Models 模型或 Collection 对象
      * @param $object
      * @return void
      */
@@ -25,15 +25,40 @@ trait MiddleTableOperate
             $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
             // $query = DB::table($table_name);
             $query = new $class;
-            // 当第一模型为集合时，遍历第一模型
-            if (object_is_collection($this)) {
-                foreach ($this as $item) {
-                    $this->createForeachSecondModel($item, $object, $query, $first_key, $second_key);
-                }
-            } else {
-                $this->createForeachSecondModel($this, $object, $query, $first_key, $second_key);
-            }
+
+            // 创建模型
+            $this->createForeachSecondModel($this, $object, $query, $first_key, $second_key);
         }
+    }
+
+    /**
+     * 将本对象与目标对象绑定，并清除与目标对象同类型的其他对象
+     * 当目标对象传递为 array 时，格式为： ['model' => 'AimModel', 'id' => 12];
+     * 当目标对象传递为 object 时，直接传递 App\Models 模型或 Collection 对象
+     * @param $object
+     * @return void
+     */
+    public function middleSyncAndDeleteAnother($object): void
+    {
+        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
+
+        if ($table_name) {
+            $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
+            // $query = DB::table($table_name);
+            $query = new $class;
+
+            // 删除掉不在 $object 中的其他关联
+            $newIds = $this->getSecondValuesFromObject($object);
+            $deleteList = $query->where($first_key, $this->id)->whereNotIn($second_key, $newIds)->get();
+            $noOperationList = $query->where($first_key, $this->id)->whereIn($second_key, $newIds)->pluck("id");
+            foreach ($deleteList as $item) {
+                $item->delete();
+            }
+
+            // 创建模型
+            $this->createForeachSecondModel($this, $object, $query, $first_key, $second_key, $noOperationList);
+        }
+
     }
 
     /**
@@ -43,19 +68,29 @@ trait MiddleTableOperate
      * @param $query
      * @param $first_key
      * @param $second_key
+     * @param array $exceptSecondIds
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function createForeachSecondModel($firstModel, $secondModel, $query, $first_key, $second_key): void
+    private function createForeachSecondModel($firstModel, $secondModel, $query, $first_key, $second_key, array $exceptSecondIds = []): void
     {
         if (is_array($secondModel)) { // 数组键值对
-            $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $secondModel['id']);
+            // 判断 id 有几个
+            if (is_array($secondModel[$this->idFieldName])) {
+                // 数组
+                foreach ($secondModel[$this->idFieldName] as $id) {
+                    if (!in_array($id, $exceptSecondIds)) $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $id);
+                }
+            } else {
+                // 单个
+                if (!in_array($secondModel[$this->idFieldName], $exceptSecondIds)) $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $secondModel[$this->idFieldName]);
+            }
         } elseif (object_is_collection($secondModel)) {
             foreach ($secondModel as $item) { // 集合
-                $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $item->id);
+                if (!in_array($item->id, $exceptSecondIds)) $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $item->id);
             }
         } else { // 模型
-            $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $secondModel->id);
+            if (!in_array($secondModel->id, $exceptSecondIds)) $this->createMiddleTableData($query, $first_key, $firstModel->id, $second_key, $secondModel->id);
         }
     }
 
@@ -140,7 +175,10 @@ trait MiddleTableOperate
     }
 
     /**
-     * 将本对象与目标模型的关联删除。可接受参数：array: ['model' => 'AimModel', 'id' => 12]; Model; Collection
+     * 将本对象与目标模型的关联删除。可接受参数：array: ['model' => 'AimModel', 'id' => 12];
+     *                                          ['model' => 'AimModel', 'id' => [10, 11, 12]];
+     *                                   Model;
+     *                                   Collection;
      * @param $object
      * @return void
      */
