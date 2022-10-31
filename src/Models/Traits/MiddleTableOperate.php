@@ -36,7 +36,7 @@ trait MiddleTableOperate
 
     /**
      * 将本对象与目标对象绑定，并清除与目标对象同类型的其他对象
-     * @param array|object $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
+     * @param object|array $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
      *                                               ["model" => "AimModel", "id" => [10, 11, 12]];
      *                                       object: Model;
      *                                               Collection;
@@ -44,7 +44,7 @@ trait MiddleTableOperate
      * @param string|null $secondModelName
      * @return void
      */
-    public function middleSyncAndDeleteAnother($object, string $firstModelName = null, string $secondModelName = null): void
+    public function middleSyncAndDeleteAnother(object|array $object, string $firstModelName = null, string $secondModelName = null): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
 
@@ -56,7 +56,7 @@ trait MiddleTableOperate
             // 删除掉不在 $object 中的其他关联
             $newIds = $this->getSecondValuesFromObject($object);
             $deleteList = $query->where($first_key, $this->id)->whereNotIn($second_key, $newIds)->get();
-            $noOperationList = $query->where($first_key, $this->id)->whereIn($second_key, $newIds)->pluck("id");
+            $noOperationList = $query->where($first_key, $this->id)->whereIn($second_key, $newIds)->pluck("id")->toArray();
             foreach ($deleteList as $item) {
                 $item->delete();
             }
@@ -69,13 +69,13 @@ trait MiddleTableOperate
 
     /**
      * 将本对象与目标模型的关联全部清除。
-     * @param array|object $object 可接受参数：array: ["model" => "AimModel"];
+     * @param object|array $object 可接受参数：array: ["model" => "AimModel"];
      *                                      object: new AimModel();
      * @param string|null $firstModelName
      * @param string|null $secondModelName
      * @return void
      */
-    public function cleanSync($object, string $firstModelName = null, string $secondModelName = null): void
+    public function cleanSync(object|array $object, string $firstModelName = null, string $secondModelName = null): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
         if ($table_name) {
@@ -91,7 +91,7 @@ trait MiddleTableOperate
 
     /**
      * 将本对象与目标模型的关联删除。
-     * @param array|object $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
+     * @param object|array $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
      *                                               ["model" => "AimModel", "id" => [10, 11, 12]];
      *                                       object: Model;
      *                                               Collection;
@@ -99,7 +99,7 @@ trait MiddleTableOperate
      * @param string|null $secondModelName
      * @return void
      */
-    public function deleteSync($object, string $firstModelName = null, string $secondModelName = null): void
+    public function deleteSync(object|array $object, string $firstModelName = null, string $secondModelName = null): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
         if ($table_name) {
@@ -166,14 +166,14 @@ trait MiddleTableOperate
 
     /**
      * @description 获取中间表名称
-     * @param $object
-     * @param $firstModelName
-     * @param $secondModelName
+     * @param object|array $object
+     * @param string|null $firstModelName
+     * @param string|null $secondModelName
      * @return array
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function getMiddleTableName($object, $firstModelName, $secondModelName): array
+    private function getMiddleTableName(object|array $object, string|null $firstModelName, string|null $secondModelName): array
     {
         $firstModelName = create_under_score($firstModelName ?? $this->getModelName($this));
         $secondModelName = create_under_score($secondModelName ?? $this->getModelName($object));
@@ -200,12 +200,12 @@ trait MiddleTableOperate
 
     /**
      * @description 获取对象的模块名称
-     * @param $model
+     * @param object|array $model
      * @return string
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function getModelName($model): string
+    private function getModelName(object|array $model): string
     {
         if (is_array($model)) return str_replace("\\", "", str_replace("App\Models\\", "", $model[$this->modelFieldName]));
         else if (object_is_collection($model)) return $this->getModelName($model[0]);
@@ -214,10 +214,10 @@ trait MiddleTableOperate
 
     /**
      * 从对象中获取第二模型的 id 列表
-     * @param $object
+     * @param object|array $object
      * @return array
      */
-    private function getSecondValuesFromObject($object): array
+    private function getSecondValuesFromObject(object|array $object): array
     {
         if (is_array($object)) { // 数组键值对
             if (is_array($object[$this->idFieldName])) return $object[$this->idFieldName];
