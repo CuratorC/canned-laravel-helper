@@ -7,22 +7,25 @@ use Log;
 
 trait MiddleTableOperate
 {
-    protected string $modelFieldName = 'model';
-    protected string $idFieldName = 'id';
+    protected string $modelFieldName = "model";
+    protected string $idFieldName = "id";
 
     /**
-     * 将本对象与目标对象绑定
-     * 当目标对象传递为 array 时，格式为： ['model' => 'AimModel', 'id' => 12] 或 ['model' => 'AimModel', 'id' => [10, 11, 12]];
-     * 当目标对象传递为 object 时，直接传递 App\Models 模型或 Collection 对象
-     * @param $object
+     * 将本对象与目标对象绑定。
+     * @param object|array $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
+     *                                               ["model" => "AimModel", "id" => [10, 11, 12]];
+     *                                       object: Model;
+     *                                               Collection;
+     * @param string|null $firstModelName 手动指定本体对象的模型名，如： ExhibitionHallImage
+     * @param string|null $secondModelName 手动指定绑定对象的模型名，如： ResourceStorage
      * @return void
      */
-    public function middleSync($object): void
+    public function middleSync(object|array $object, string $firstModelName = null, string $secondModelName = null): void
     {
-        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
+        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
 
         if ($table_name) {
-            $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
+            $class = "App\Models\Pivots\\" . create_big_camelize($table_name);
             // $query = DB::table($table_name);
             $query = new $class;
 
@@ -33,17 +36,20 @@ trait MiddleTableOperate
 
     /**
      * 将本对象与目标对象绑定，并清除与目标对象同类型的其他对象
-     * 当目标对象传递为 array 时，格式为： ['model' => 'AimModel', 'id' => 12];
-     * 当目标对象传递为 object 时，直接传递 App\Models 模型或 Collection 对象
-     * @param $object
+     * @param array|object $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
+     *                                               ["model" => "AimModel", "id" => [10, 11, 12]];
+     *                                       object: Model;
+     *                                               Collection;
+     * @param string|null $firstModelName
+     * @param string|null $secondModelName
      * @return void
      */
-    public function middleSyncAndDeleteAnother($object): void
+    public function middleSyncAndDeleteAnother($object, string $firstModelName = null, string $secondModelName = null): void
     {
-        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
+        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
 
         if ($table_name) {
-            $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
+            $class = "App\Models\Pivots\\" . create_big_camelize($table_name);
             // $query = DB::table($table_name);
             $query = new $class;
 
@@ -59,6 +65,55 @@ trait MiddleTableOperate
             $this->createForeachSecondModel($this, $object, $query, $first_key, $second_key, $noOperationList);
         }
 
+    }
+
+    /**
+     * 将本对象与目标模型的关联全部清除。
+     * @param array|object $object 可接受参数：array: ["model" => "AimModel"];
+     *                                      object: new AimModel();
+     * @param string|null $firstModelName
+     * @param string|null $secondModelName
+     * @return void
+     */
+    public function cleanSync($object, string $firstModelName = null, string $secondModelName = null): void
+    {
+        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
+        if ($table_name) {
+            $class = "App\Models\Pivots\\" . create_big_camelize($table_name);
+            $query = new $class;
+
+            $list = $query->where($first_key, $this->id)->get();
+            foreach ($list as $item) {
+                $item->delete();
+            }
+        }
+    }
+
+    /**
+     * 将本对象与目标模型的关联删除。
+     * @param array|object $object 可接受参数：array:  ["model" => "AimModel", "id" => 12];
+     *                                               ["model" => "AimModel", "id" => [10, 11, 12]];
+     *                                       object: Model;
+     *                                               Collection;
+     * @param string|null $firstModelName
+     * @param string|null $secondModelName
+     * @return void
+     */
+    public function deleteSync($object, string $firstModelName = null, string $secondModelName = null): void
+    {
+        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
+        if ($table_name) {
+            $class = "App\Models\Pivots\\" . create_big_camelize($table_name);
+
+            $ids = $this->getSecondValuesFromObject($object);
+            foreach ($ids as $id) {
+                $query = new $class;
+                $list = $query->where($first_key, $this->id)->where($second_key, $id)->get();
+                foreach ($list as $item) {
+                    $item->delete();
+                }
+            }
+        }
     }
 
     /**
@@ -112,14 +167,16 @@ trait MiddleTableOperate
     /**
      * @description 获取中间表名称
      * @param $object
+     * @param $firstModelName
+     * @param $secondModelName
      * @return array
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function getMiddleTableName($object): array
+    private function getMiddleTableName($object, $firstModelName, $secondModelName): array
     {
-        $firstModelName = create_under_score($this->getModelName($this));
-        $secondModelName = create_under_score($this->getModelName($object));
+        $firstModelName = $firstModelName ?? create_under_score($this->getModelName($this));
+        $secondModelName = $secondModelName ?? create_under_score($this->getModelName($object));
         if ($firstModelName && $secondModelName) {
             $modelArray = [$firstModelName, $secondModelName];
             sort($modelArray);
@@ -135,7 +192,7 @@ trait MiddleTableOperate
                 }
             }
 
-            return [$modelArray[0] . '_' . $modelArray[1], $firstModelName . '_id', $secondModelName . '_id'];
+            return [$modelArray[0] . "_" . $modelArray[1], $firstModelName . "_id", $secondModelName . "_id"];
         } else {
             return [false, false, false];
         }
@@ -150,55 +207,16 @@ trait MiddleTableOperate
      */
     private function getModelName($model): string
     {
-        if (is_array($model)) return str_replace('\\', '', str_replace('App\Models\\', '', $model[$this->modelFieldName]));
+        if (is_array($model)) return str_replace("\\", "", str_replace("App\Models\\", "", $model[$this->modelFieldName]));
         else if (object_is_collection($model)) return $this->getModelName($model[0]);
-        else return str_replace('\\', '', str_replace('App\Models\\', '', get_class($model)));
+        else return str_replace("\\", "", str_replace("App\Models\\", "", get_class($model)));
     }
 
     /**
-     * 将本对象与目标模型的关联全部清除。可接受参数：array: ['model' => 'AimModel']; 或者 new AimModel();
+     * 从对象中获取第二模型的 id 列表
      * @param $object
-     * @return void
+     * @return array
      */
-    public function cleanSync($object): void
-    {
-        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
-        if ($table_name) {
-            $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
-            $query = new $class;
-
-            $list = $query->where($first_key, $this->id)->get();
-            foreach ($list as $item) {
-                $item->delete();
-            }
-        }
-    }
-
-    /**
-     * 将本对象与目标模型的关联删除。可接受参数：array: ['model' => 'AimModel', 'id' => 12];
-     *                                          ['model' => 'AimModel', 'id' => [10, 11, 12]];
-     *                                   Model;
-     *                                   Collection;
-     * @param $object
-     * @return void
-     */
-    public function deleteSync($object): void
-    {
-        [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object);
-        if ($table_name) {
-            $class = 'App\Models\Pivots\\' . create_big_camelize($table_name);
-
-            $ids = $this->getSecondValuesFromObject($object);
-            foreach ($ids as $id) {
-                $query = new $class;
-                $list = $query->where($first_key, $this->id)->where($second_key, $id)->get();
-                foreach ($list as $item) {
-                    $item->delete();
-                }
-            }
-        }
-    }
-
     private function getSecondValuesFromObject($object): array
     {
         if (is_array($object)) { // 数组键值对
