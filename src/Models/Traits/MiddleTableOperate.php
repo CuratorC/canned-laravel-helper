@@ -175,8 +175,8 @@ trait MiddleTableOperate
      */
     private function getMiddleTableName($object, $firstModelName, $secondModelName): array
     {
-        $firstModelName = $firstModelName ?? create_under_score($this->getModelName($this));
-        $secondModelName = $secondModelName ?? create_under_score($this->getModelName($object));
+        $firstModelName = create_under_score($firstModelName ?? $this->getModelName($this));
+        $secondModelName = create_under_score($secondModelName ?? $this->getModelName($object));
         if ($firstModelName && $secondModelName) {
             $modelArray = [$firstModelName, $secondModelName];
             sort($modelArray);
