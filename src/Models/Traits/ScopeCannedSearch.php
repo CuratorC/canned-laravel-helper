@@ -15,8 +15,36 @@ use Illuminate\Pagination\LengthAwarePaginator;
 trait ScopeCannedSearch
 {
 
+    // request 模糊搜索参数名
+    protected string $searchKeywordName = 'keyword';
+
+    // With
+    // 加载关联模型参数名
+    protected string $withName = "with";
+    // Order
+    // request order 行 参数名
+    protected string $orderByColumnFieldName = 'field';
+    // request order 行 排列方式名
+    protected string $orderByDirectionFieldName = 'order';
+    // request order 新行 默认排列方式
+    protected string $orderByNewColumnDefaultDirection = 'ASC';
+
+    // 固有排列方式
+    protected string $orderByDefaultColumn = 'id';
+    protected string $orderByDefaultDirection = 'DESC';
+
+
+    // 模糊搜索 查询字段记录格式
+    private string $searchColumnFieldName = 'column';
+    private string $searchFuncFieldName = 'func';
+
+    // request 对象
     protected FormRequest $searchRequest;
 
+
+
+    // 查询字段记录
+    private array $searchArray = array();
     /**
      * @description 单条查询
      * $query->cannedWhen('column', function(Builder $query, string $value){
@@ -41,14 +69,7 @@ trait ScopeCannedSearch
         return $query;
     }
 
-    // 查询字段记录
-    private array $searchArray = array();
-    // request 模糊搜索参数名
-    protected string $searchKeywordName = 'keyword';
 
-    // 模糊搜索 查询字段记录格式
-    private string $searchColumnFieldName = 'column';
-    private string $searchFuncFieldName = 'func';
     /**
      * @description 为 keyword 匹配所有查询条件查询
      * $query->cannedWhenKeyword();
@@ -73,18 +94,6 @@ trait ScopeCannedSearch
         });
     }
 
-
-    // Order
-    // request order 行 参数名
-    protected string $orderByColumnFieldName = 'field';
-    // request order 行 排列方式名
-    protected string $orderByDirectionFieldName = 'order';
-    // request order 新行 默认排列方式
-    protected string $orderByNewColumnDefaultDirection = 'ASC';
-
-    // 固有排列方式
-    protected string $orderByDefaultColumn = 'id';
-    protected string $orderByDefaultDirection = 'DESC';
 
     /**
      * @description order 排序
@@ -116,6 +125,27 @@ trait ScopeCannedSearch
 
         // 追加固定排序
         return $query->orderBy($this->orderByDefaultColumn, $this->orderByDefaultDirection);
+    }
+
+    /**
+     *ㅤ加载关联模型
+     *
+     * with: 关联列表
+     * $query->cannedWith(["user"]);
+     * @param $query
+     * @param bool $ableAll
+     * @param int $defaultSize
+     * @return Collection|LengthAwarePaginator
+     * @date 2020/10/13
+     * @author Curator
+     */
+    public function scopeCannedWith($query, array $withs): Collection|LengthAwarePaginator
+    {
+        $withName = $this->withName;
+        $queryWiths = $this->searchRequest->$withName ?? [];
+
+        $withs = array_merge($withs, $queryWiths);
+        return $query->with($withs);
     }
 
     /**
