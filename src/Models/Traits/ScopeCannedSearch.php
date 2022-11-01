@@ -135,11 +135,11 @@ trait ScopeCannedSearch
      * @param $query
      * @param bool $ableAll
      * @param int $defaultSize
-     * @return Collection|LengthAwarePaginator
+     * @return Builder
      * @date 2020/10/13
      * @author Curator
      */
-    public function scopeCannedWith($query, array $withs): Collection|LengthAwarePaginator
+    public function scopeCannedWith($query, array $withs): Builder
     {
         $withName = $this->withName;
         $queryWiths = $this->searchRequest->$withName ?? [];
