@@ -69,13 +69,14 @@ trait MiddleTableOperate
 
     /**
      * 将本对象与目标模型的关联全部清除。
-     * @param object|array $object 可接受参数：array: ["model" => "AimModel"];
-     *                                      object: new AimModel();
+     * @param object|array|string $object 可接受参数：array: ["model" => "AimModel"];
+     *                                              object: new AimModel();
+     *                                              string: AimModel::class;
      * @param string|null $firstModelName
      * @param string|null $secondModelName
      * @return void
      */
-    public function cleanSync(object|array $object, string $firstModelName = null, string $secondModelName = null): void
+    public function cleanSync(object|array|string $object, string $firstModelName = null, string $secondModelName = null): void
     {
         [$table_name, $first_key, $second_key] = $this->getMiddleTableName($object, $firstModelName, $secondModelName);
         if ($table_name) {
@@ -200,14 +201,15 @@ trait MiddleTableOperate
 
     /**
      * @description 获取对象的模块名称
-     * @param object|array $model
+     * @param object|array|string $model
      * @return string
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function getModelName(object|array $model): string
+    private function getModelName(object|array|string $model): string
     {
-        if (is_array($model)) return str_replace("\\", "", str_replace("App\Models\\", "", $model[$this->modelFieldName]));
+        if (is_string($model)) return str_replace("App\Models\\", "", $model);
+        else if (is_array($model)) return str_replace("\\", "", str_replace("App\Models\\", "", $model[$this->modelFieldName]));
         else if (object_is_collection($model)) return $this->getModelName($model[0]);
         else return str_replace("\\", "", str_replace("App\Models\\", "", get_class($model)));
     }
