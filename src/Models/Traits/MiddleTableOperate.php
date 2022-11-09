@@ -167,14 +167,14 @@ trait MiddleTableOperate
 
     /**
      * @description 获取中间表名称
-     * @param object|array $object
+     * @param object|array|string $object
      * @param string|null $firstModelName
      * @param string|null $secondModelName
      * @return array
      * @author CuratorC
      * @date 2021/3/4
      */
-    private function getMiddleTableName(object|array $object, string|null $firstModelName, string|null $secondModelName): array
+    private function getMiddleTableName(object|array|string $object, string|null $firstModelName, string|null $secondModelName): array
     {
         $firstModelName = create_under_score($firstModelName ?? $this->getModelName($this));
         $secondModelName = create_under_score($secondModelName ?? $this->getModelName($object));
