@@ -162,7 +162,7 @@ trait MiddleTableOperate
      */
     private function createMiddleTableData($query, $first_key, $first_value, $second_key, $second_value): void
     {
-        $query->firstOrCreate([$first_key => $first_value, $second_key => $second_value]);
+        if ($first_value && $second_value) $query->firstOrCreate([$first_key => $first_value, $second_key => $second_value]);
     }
 
     /**
