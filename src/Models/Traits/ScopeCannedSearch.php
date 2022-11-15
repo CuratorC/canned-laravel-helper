@@ -144,6 +144,8 @@ trait ScopeCannedSearch
         $withName = $this->withName;
         $queryWiths = $this->searchRequest->$withName ?? [];
 
+        if (is_string($queryWiths)) $queryWiths = explode(",", $queryWiths);
+
         $withs = array_merge($withs, $queryWiths);
         return $query->with($withs);
     }
