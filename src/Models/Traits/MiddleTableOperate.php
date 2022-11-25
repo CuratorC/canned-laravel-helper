@@ -222,16 +222,21 @@ trait MiddleTableOperate
     private function getSecondValuesFromObject(object|array $object): array
     {
         if (is_array($object)) { // 数组键值对
-            if (is_array($object[$this->idFieldName])) return $object[$this->idFieldName];
-            else return [$object[$this->idFieldName]];
+            if (is_array($object[$this->idFieldName])) $values = $object[$this->idFieldName];
+            else $values = [$object[$this->idFieldName]];
         } elseif (object_is_collection($object)) {
             $ids = array();
             foreach ($object as $item) { // 集合
                 $ids[] = $item->id;
             }
-            return $ids;
+            $values = $ids;
         } else { // 模型
-            return [$object->id];
+            $values = [$object->id];
         }
+
+        if ($values === [null]) {
+            $values = [0];
+        }
+        return $values;
     }
 }
